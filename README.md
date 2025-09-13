@@ -1,37 +1,30 @@
 # Django REST API Project
 
-This project is a Django-based REST API application that provides functionality for user registration, login, creating posts, and liking posts. The API uses JWT authentication for secure access.
+This project is a simple Django REST API that allows users to register, log in, create posts, and like/unlike posts. The project uses Django REST Framework (DRF) and JWT for authentication.
 
 ## Features
 
-* User registration and login with JWT authentication.
-* Create, update, delete, and view posts.
-* Like and unlike posts.
-* Permissions: Users can only update or delete their own posts.
-
-## Technologies Used
-
-* Python 3.x
-* Django 5.1.3
-* Django REST Framework
-* Django REST Framework Simple JWT
-* SQLite (default database)
+* User registration and login with JWT authentication
+* Create, update, and delete posts
+* Like and unlike posts
+* Only authors can edit or delete their own posts
+* Retrieve all posts created by the authenticated user
 
 ## Installation
 
 1. Clone the repository:
 
 ```bash
-git clone <repository_url>
-cd <repository_folder>
+git clone <your-repo-url>
+cd <project-folder>
 ```
 
-2. Create a virtual environment and activate it:
+2. Create a virtual environment:
 
 ```bash
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate  # Windows
+source venv/bin/activate  # Linux/macOS
+venv\Scripts\activate     # Windows
 ```
 
 3. Install dependencies:
@@ -46,13 +39,13 @@ pip install -r requirements.txt
 python manage.py migrate
 ```
 
-5. Create a superuser (optional, for admin access):
+5. Create a superuser (optional, for admin panel):
 
 ```bash
 python manage.py createsuperuser
 ```
 
-6. Run the development server:
+6. Run the server:
 
 ```bash
 python manage.py runserver
@@ -60,52 +53,121 @@ python manage.py runserver
 
 ## API Endpoints
 
-### Authentication
+### Auth
 
-* **Register**: `POST /api/register/`
-
-  * Request Body: `username`, `password`, `email`
-  * Response: Registration status
-
-* **Login**: `POST /api/login/`
-
-  * Request Body: `username`, `password`
-  * Response: JWT tokens (`access` and `refresh`)
+| Endpoint         | Method | Description                   |
+| ---------------- | ------ | ----------------------------- |
+| `/api/register/` | POST   | Register a new user           |
+| `/api/login/`    | POST   | Log in and receive JWT tokens |
 
 ### Posts
 
-* **List/Create Posts**: `GET/POST /api/posts/`
-* **Retrieve/Update/Delete Post**: `GET/PUT/DELETE /api/posts/{id}/`
-* **Like/Unlike Post**: `POST /api/like/{id}/`
+| Endpoint           | Method | Description                           |
+| ------------------ | ------ | ------------------------------------- |
+| `/api/posts/`      | GET    | List all posts of authenticated user  |
+| `/api/posts/`      | POST   | Create a new post (authenticated)     |
+| `/api/posts/<id>/` | GET    | Retrieve a single post                |
+| `/api/posts/<id>/` | PUT    | Update a post (author only)           |
+| `/api/posts/<id>/` | DELETE | Delete a post (author only)           |
+| `/api/like/<id>/`  | POST   | Like or unlike a post (authenticated) |
 
-> Note: Only the author of a post can update or delete it.
+## JWT Authentication
 
-## Models
+* After login, you will receive a `refresh` token and an `access` token.
+* Use the `access` token in the `Authorization` header for authenticated requests:
 
-* **User**: Default Django user model
-* **Post**:
+```
+Authorization: Bearer <access_token>
+```
 
-  * `title`: CharField
-  * `content`: TextField
-  * `author`: ForeignKey to User
-  * `like`: ManyToManyField to User
+## API Testing
 
-## Usage
+You can test the API using tools like **Postman** or **cURL**:
 
-1. Register a new user via `/api/register/`
-2. Login to receive JWT tokens via `/api/login/`
-3. Use the `Authorization: Bearer <access_token>` header to access protected endpoints.
-4. Create, update, delete, and like posts using the API endpoints.
+1. **Register a new user**:
+
+```bash
+POST /api/register/
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "password123"
+}
+```
+
+2. **Login**:
+
+```bash
+POST /api/login/
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "password123"
+}
+```
+
+Response:
+
+```json
+{
+  "refresh": "<refresh_token>",
+  "access": "<access_token>"
+}
+```
+
+3. **Create a post**:
+
+```bash
+POST /api/posts/
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "title": "My First Post",
+  "content": "This is the content of my first post."
+}
+```
+
+4. **Like a post**:
+
+```bash
+POST /api/like/<post_id>/
+Authorization: Bearer <access_token>
+```
+
+Response:
+
+```json
+{
+  "detail": "post liked"
+}
+```
+
+5. **Unlike a post**:
+
+```bash
+POST /api/like/<post_id>/
+Authorization: Bearer <access_token>
+```
+
+Response:
+
+```json
+{
+  "detail": "post unliked"
+}
+```
 
 ## Requirements
 
-The `requirements.txt` file should include:
+* Python 3.10+
+* Django 5.1.3
+* Django REST Framework
+* djangorestframework-simplejwt
 
-```
-django>=5.1.3
-djangorestframework
-djangorestframework-simplejwt
-```
 
 ## Admin Panel
 
